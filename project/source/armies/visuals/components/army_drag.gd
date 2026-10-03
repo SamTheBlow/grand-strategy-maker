@@ -147,6 +147,7 @@ func _on_drag_started() -> void:
 	_dragged_visuals.reparent(_army_visuals_list)
 	_dragged_visuals.modulate.a = 0.5
 	_dragged_visuals.remove_highlight()
+	_preview_index = _dragged_index()
 	_refresh_preview()
 	get_viewport().set_input_as_handled()
 
