@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://b6m34cr6be73d" path="res://source/armies/visuals/army_color_update.gd" id="9_color"]
 
 [node name="ArmyVisuals2D" type="Node2D" unique_id=853084620]
-z_index = 1
+z_index = 2
 script = ExtResource("1_80ub2")
 _outline_none = ExtResource("5_3h66f")
 _outline_highlight = ExtResource("6_3h66f")

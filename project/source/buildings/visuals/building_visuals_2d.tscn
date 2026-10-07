@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ckwiodabpo3cp" path="res://source/buildings/visuals/building_visuals_2d.gd" id="1_gvpi5"]
 
 [node name="BuildingVisuals2D" type="Node2D" unique_id=1450099171]
+z_index = 1
 script = ExtResource("1_gvpi5")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=2023938414]

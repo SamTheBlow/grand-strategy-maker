@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://ncbp1fi6mxem" path="res://source/provinces/visuals/outlined_polygon_2d.gd" id="5_2dec"]
 
 [node name="DecorationVisuals2D" type="Node2D" unique_id=1324881751]
-z_index = 2
+z_index = 3
 script = ExtResource("1_2dec")
 _outline_none = ExtResource("2_2dec")
 _outline_highlight = ExtResource("3_2dec")
