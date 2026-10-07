@@ -20,6 +20,10 @@ signal mouse_exited()
 ## Outline used to show the province as a valid target.
 @export var _outline_target: OutlineSettings
 
+## Hides buildings when false. (Does not always show buildings when true.)
+var is_buildings_visible: bool = true:
+	set = set_is_buildings_visible
+
 ## May be null, in which case LOD culling is disabled.
 var lod: WorldLOD = null
 
@@ -48,8 +52,8 @@ func _ready() -> void:
 	_input_area.mouse_exited.connect(set.bind(&"_mouse_is_inside_area", false))
 	_input_area.mouse_exited.connect(mouse_exited.emit)
 
+	_refresh_visibility()
 	if lod != null:
-		_refresh_visibility()
 		lod.changed.connect(_refresh_visibility)
 
 	(%ProvinceColorUpdate as ProvinceColorUpdate).setup(province)
@@ -119,9 +123,10 @@ func remove_highlight() -> void:
 	_outlined_polygon.outline_settings = _outline_none
 
 
-## Shows or hides buildings in this province.
-func set_building_visibility(value: bool) -> void:
-	_buildings.visible = value
+func set_is_buildings_visible(value: bool) -> void:
+	is_buildings_visible = value
+	if is_node_ready():
+		_refresh_visibility()
 
 
 ## Debug function that clearly highlights this province on the world map.
@@ -219,6 +224,13 @@ func _refresh_preview() -> void:
 func _refresh_visibility() -> void:
 	if is_preview:
 		return
+	elif lod == null:
+		_outlined_polygon.visible = true
+		_buildings.visible = is_buildings_visible
+		return
 
 	_outlined_polygon.visible = lod.detail_level > WorldLOD.DetailLevel.LOW
-	_buildings.visible = lod.detail_level > WorldLOD.DetailLevel.LOW
+	_buildings.visible = (
+			lod.detail_level > WorldLOD.DetailLevel.LOW
+			and is_buildings_visible
+	)
