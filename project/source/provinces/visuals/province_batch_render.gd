@@ -11,19 +11,23 @@ extends Node2D
 var provinces: Provinces = null:
 	set(value):
 		if provinces != null:
+			provinces.added.disconnect(_connect_province)
 			provinces.added.disconnect(queue_redraw)
+			provinces.removed.disconnect(_disconnect_province)
 			provinces.removed.disconnect(queue_redraw)
 			for province in provinces.list:
-				province.owner_changed.disconnect(queue_redraw)
+				_disconnect_province(province)
 
 		provinces = value
 		queue_redraw()
 
 		if provinces != null:
-			provinces.added.connect(queue_redraw.unbind(1))
-			provinces.removed.connect(queue_redraw.unbind(1))
 			for province in provinces.list:
-				province.owner_changed.connect(queue_redraw.unbind(1))
+				_connect_province(province)
+			provinces.added.connect(_connect_province)
+			provinces.added.connect(queue_redraw.unbind(1))
+			provinces.removed.connect(_disconnect_province)
+			provinces.removed.connect(queue_redraw.unbind(1))
 
 
 func _ready() -> void:
@@ -47,3 +51,13 @@ func _draw() -> void:
 
 func _refresh_visibility() -> void:
 	visible = lod.detail_level <= WorldLOD.DetailLevel.LOW
+
+
+func _connect_province(province: Province) -> void:
+	province.owner_changed.connect(queue_redraw.unbind(1))
+	province.polygon().changed.connect(queue_redraw)
+
+
+func _disconnect_province(province: Province) -> void:
+	province.owner_changed.disconnect(queue_redraw)
+	province.polygon().changed.disconnect(queue_redraw)
