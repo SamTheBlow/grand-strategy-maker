@@ -215,14 +215,14 @@ static func _super_to_dict(game_notification: GameNotification) -> Dictionary:
 		output.merge({ _CREATION_TURN_KEY: game_notification.creation_turn() })
 
 	if (
-			game_notification._turns_before_dismiss
+			game_notification.turns_before_dismiss
 			!= GameNotification.DEFAULT_TURNS_BEFORE_DISMISS
 	):
 		output.merge({
-			_TURNS_BEFORE_DISMISS_KEY: game_notification._turns_before_dismiss
+			_TURNS_BEFORE_DISMISS_KEY: game_notification.turns_before_dismiss
 		})
 
-	if game_notification._was_seen_this_turn:
+	if game_notification.was_seen_this_turn:
 		output.merge({ _WAS_SEEN_THIS_TURN_KEY: true })
 
 	return output

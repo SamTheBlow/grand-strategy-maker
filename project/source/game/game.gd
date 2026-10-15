@@ -81,6 +81,7 @@ func _init() -> void:
 	AutoArrowProvinceCleanup.connect_game(self)
 	ProvinceOwnershipUpdate.connect_game(self)
 	AIRandomization.connect_game(self)
+	NotificationAutoDismiss.connect_game(self)
 
 
 ## Sets up the game to be ready for playing.

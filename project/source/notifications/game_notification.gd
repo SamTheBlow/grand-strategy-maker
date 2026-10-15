@@ -2,7 +2,9 @@ class_name GameNotification
 ## Informs a specific [Country] of something.
 ## The country can either dismiss the notification
 ## or choose between some predefined outcome options.
+##
 ## The notification is automatically dismissed after some number of turns.
+## (See [NotificationAutoDismiss])
 ##
 ## This is a base class, so it doesn't do anything.
 ## Extend this class to give it functionality, outcome options, etc.
@@ -16,18 +18,18 @@ const DEFAULT_TURNS_BEFORE_DISMISS: int = 3
 ## Useful for saving/loading, networking, etc.
 var id: int = -1
 
+## The number of turns before this notification is automatically dismissed.
+var turns_before_dismiss: int = DEFAULT_TURNS_BEFORE_DISMISS
+
+## The number of turns before automatically dismissing will only
+## go down when the recipient country has seen the notification.
+var was_seen_this_turn: bool = false
+
 var _game: Game
 var _recipient_country: Country
 
 ## The turn on which this notification was created.
 var _creation_turn: int = 1
-
-## The number of turns before this notification is automatically dismissed.
-var _turns_before_dismiss: int
-
-## The number of turns before automatically dismissing will only
-## go down when the recipient country has seen the notification.
-var _was_seen_this_turn: bool
 
 ## To be setup by subclasses.
 ## Please make sure there is the same number of names and functions,
@@ -42,18 +44,15 @@ func _init(
 		game: Game,
 		recipient_country: Country,
 		creation_turn_: int = game.turn.current_turn(),
-		turns_before_dismiss: int = DEFAULT_TURNS_BEFORE_DISMISS,
-		was_seen_this_turn: bool = false,
+		initial_turns_before_dismiss: int = DEFAULT_TURNS_BEFORE_DISMISS,
+		initial_was_seen_this_turn: bool = false,
 ) -> void:
+	turns_before_dismiss = initial_turns_before_dismiss
+	was_seen_this_turn = initial_was_seen_this_turn
 	_game = game
 	_recipient_country = recipient_country
 	_creation_turn = creation_turn_
-	_turns_before_dismiss = turns_before_dismiss
-	_was_seen_this_turn = was_seen_this_turn
-	_on_playing_country_changed(game.turn.playing_country())
 
-	game.turn.turn_changed.connect(_on_turn_changed)
-	game.turn.playing_country_changed.connect(_on_playing_country_changed)
 	game.countries.removed.connect(_on_country_removed)
 
 
@@ -125,16 +124,3 @@ func _outcome_can_be_selected() -> bool:
 func _on_country_removed(country: Country) -> void:
 	if country.id == _recipient_country.id:
 		dismiss()
-
-
-func _on_playing_country_changed(country: Country) -> void:
-	if country == _recipient_country:
-		_was_seen_this_turn = true
-
-
-func _on_turn_changed(_turn: int) -> void:
-	if _was_seen_this_turn:
-		_turns_before_dismiss -= 1
-		if _turns_before_dismiss < 1:
-			dismiss()
-	_was_seen_this_turn = false
