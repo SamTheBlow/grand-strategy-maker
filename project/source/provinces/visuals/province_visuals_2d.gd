@@ -61,7 +61,7 @@ func _ready() -> void:
 	_refresh_stack_position()
 	province.position_army_host_changed.connect(_refresh_stack_position)
 	_refresh_polygon()
-	province.polygon().changed.connect(_refresh_polygon)
+	province.shape.changed.connect(_refresh_polygon)
 
 	_buildings.province = province
 
@@ -132,10 +132,10 @@ func set_is_buildings_visible(value: bool) -> void:
 ## Debug function that clearly highlights this province on the world map.
 ## To remove the highlight, pass false as an argument.
 func highlight_debug(
-		outline_color: Color = Color.BLUE, show_highlight: bool = true
+		outline_color := Color.BLUE, show_highlight: bool = true
 ) -> void:
-	if has_node("DebugHighlight"):
-		remove_child(get_node("DebugHighlight"))
+	if has_node(^"DebugHighlight"):
+		remove_child(get_node(^"DebugHighlight"))
 
 	if not show_highlight:
 		return
@@ -145,9 +145,9 @@ func highlight_debug(
 	outline_settings.outline_width = 8.0
 
 	var debug_highlight := OutlinedPolygon2D.new()
-	debug_highlight.name = "DebugHighlight"
+	debug_highlight.name = &"DebugHighlight"
 	debug_highlight.color = Color(0.0, 0.0, 0.0, 0.0)
-	debug_highlight.polygon = province.polygon().array
+	debug_highlight.polygon = province.shape.polygon_points
 	debug_highlight.outline_settings = outline_settings
 	add_child(debug_highlight)
 
@@ -160,50 +160,18 @@ func _refresh_polygon() -> void:
 	if is_preview:
 		_refresh_preview()
 
-	_outlined_polygon.polygon = province.polygon().array
-	_collision_shape.polygon = province.polygon().array
+	_outlined_polygon.polygon = province.shape.polygon_points
+	_collision_shape.polygon = province.shape.polygon_points
 
 
 func _refresh_preview() -> void:
-	# Get the boundaries
-	var no_data: bool = true
-	var leftmost_point: float
-	var rightmost_point: float
-	var topmost_point: float
-	var bottommost_point: float
-
-	for vertex in province.polygon().array:
-		# Initialization
-		if no_data:
-			leftmost_point = vertex.x
-			rightmost_point = vertex.x
-			topmost_point = vertex.y
-			bottommost_point = vertex.y
-			no_data = false
-			continue
-
-		if vertex.x < leftmost_point:
-			leftmost_point = vertex.x
-		elif vertex.x > rightmost_point:
-			rightmost_point = vertex.x
-		if vertex.y < topmost_point:
-			topmost_point = vertex.y
-		elif vertex.y > bottommost_point:
-			bottommost_point = vertex.y
-
-	if no_data:
-		return
-
 	var province_rect := Rect2(
-			leftmost_point,
-			topmost_point,
-			rightmost_point - leftmost_point,
-			bottommost_point - topmost_point
+			province.shape.x_min,
+			province.shape.y_min,
+			# Prevent division by zero
+			maxf(1.0, province.shape.x_max - province.shape.x_min),
+			maxf(1.0, province.shape.y_max - province.shape.y_min)
 	)
-
-	# Prevent division by zero
-	if province_rect.size.x == 0.0 or province_rect.size.y == 0.0:
-		return
 
 	# Determine the scale ratio (e.g. if the province
 	# is 3x bigger than it should be, then we need to scale by 1/3)

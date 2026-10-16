@@ -8,7 +8,6 @@ signal link_added(linked_province_id: int)
 signal link_removed(linked_province_id: int)
 signal links_reset()
 signal owner_changed(this: Province)
-signal position_changed()
 signal position_army_host_changed(new_position: Vector2)
 signal position_fortress_changed(new_position: Vector2)
 
@@ -23,16 +22,17 @@ var name: String = "":
 		name = value
 		name_changed.emit(name)
 
-## The [Country] in control of this province. This can be null.
-## Must initialize when the province is created.
-var owner_country: Country:
+## The [Country] in control of this province.
+## May be null, in which case this province is not controlled by any country.
+var owner_country: Country = null:
 	set(value):
 		if value == owner_country:
 			return
 		owner_country = value
 		owner_changed.emit(self)
 
-var buildings := Buildings.new()
+## Do not set this to a different instance!
+var shape := ProvinceShape.new()
 
 ## Where this province's [ArmyStack2D] will be positioned.
 var position_army_host := Vector2.ZERO:
@@ -50,19 +50,18 @@ var position_fortress := Vector2(80.0, 56.0):
 		position_fortress = value
 		position_fortress_changed.emit(position_fortress)
 
+var buildings := Buildings.new()
+
 ## A list of IDs for all the provinces that are
 ## neighboring this province, e.g. when moving armies.
 var _linked_province_ids: Array[int] = []
-
-## The list of vertices forming this province's polygon shape.
-var _polygon := PackedVector2ArrayWithSignals.new(default_shape())
 
 var _population := IntWithSignals.new(0, true)
 var _money_income := IntWithSignals.new()
 
 
 func _init() -> void:
-	_polygon.amount_added_to_all.connect(_on_polygon_moved)
+	shape.position_changed.connect(_on_shape_moved)
 
 
 ## The default name this province would have if it didn't have a name.
@@ -115,28 +114,6 @@ func toggle_link(province_id: int) -> void:
 func reset_links() -> void:
 	_linked_province_ids = []
 	links_reset.emit()
-
-
-# This has to be a static function instead of a constant property.
-# Arrays are passed by reference, so a constant array means
-# it's the reference that can't change, not the contents.
-# So confusingly, a constant array's contents actually are not constant.
-## Returns a new array containing the default province shape.
-static func default_shape() -> PackedVector2Array:
-	return [
-		300.0 * Vector2(-0.5, 0.288675135),
-		300.0 * Vector2(0.5, 0.288675135),
-		300.0 * Vector2(0.0, -0.577350269),
-	]
-
-
-func polygon() -> PackedVector2ArrayWithSignals:
-	return _polygon
-
-
-## Moves this province by given amount.
-func move_relative(movement_amount: Vector2) -> void:
-	_polygon.add_to_all(movement_amount)
 
 
 func population() -> IntWithSignals:
@@ -213,7 +190,6 @@ func nearest_provinces(
 	return calculation.furthest_links
 
 
-func _on_polygon_moved(movement_amount: Vector2) -> void:
-	position_army_host += movement_amount
-	position_fortress += movement_amount
-	position_changed.emit()
+func _on_shape_moved(offset: Vector2) -> void:
+	position_army_host += offset
+	position_fortress += offset

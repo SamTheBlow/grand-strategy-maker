@@ -25,13 +25,12 @@ const _VERTEX_PREVIEW_COLOR := Color(0.0, 1.0, 1.0, 0.5)
 ## The color of drawn polygon.
 const _POLYGON_COLOR := Color(0.0, 0.5, 1.0, 0.2)
 
-var polygon := PackedVector2ArrayWithSignals.new(
-		[Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN]
-):
+var shape: ProvinceShape:
 	set(value):
-		polygon.changed.disconnect(queue_redraw)
-		polygon = value
-		polygon.changed.connect(queue_redraw)
+		if shape != null:
+			shape.changed.disconnect(queue_redraw)
+		shape = value
+		shape.changed.connect(queue_redraw)
 
 ## If set to false, the polygon itself will not be drawn.
 ## The vertices will still be drawn.
@@ -75,15 +74,11 @@ var _moved_cursor_during_polygon_drag: bool = false
 var _cursor_position: Vector2
 
 
-func _init() -> void:
-	polygon.changed.connect(queue_redraw)
-
-
 func _draw() -> void:
 	if is_draw_polygon_enabled:
-		draw_colored_polygon(polygon.array, _POLYGON_COLOR)
-	for i in polygon.array.size():
-		_draw_vertex(polygon.array[i], i)
+		draw_colored_polygon(shape.polygon_points, _POLYGON_COLOR)
+	for i in shape.polygon_points.size():
+		_draw_vertex(shape.polygon_points[i], i)
 	if _can_add_at != -1:
 		_draw_preview_vertex()
 
@@ -115,12 +110,12 @@ func _handle_left_click(event: InputEvent) -> bool:
 			_drag_to = _cursor_position
 			is_handled = true
 		if _has_active_vertex():
-			_drag_from = polygon.array[_active_index]
+			_drag_from = shape.polygon_points[_active_index]
 			_is_dragging = true
 			_is_dragging_entire_polygon = false
 			is_handled = true
-		elif can_drag_entire_polygon and (
-				Geometry2D.is_point_in_polygon(_cursor_position, polygon.array)
+		elif can_drag_entire_polygon and Geometry2D.is_point_in_polygon(
+				_cursor_position, shape.polygon_points
 		):
 			_drag_from = _cursor_position
 			_drag_to = _drag_from
@@ -151,7 +146,7 @@ func _handle_right_click(event: InputEvent) -> bool:
 			and event_mouse_button.is_pressed()
 			and _has_active_vertex()
 			and not _is_dragging
-			and polygon.array.size() > 3
+			and shape.polygon_points.size() > 3
 	):
 		_remove_vertex()
 		_active_index = -1
@@ -186,8 +181,11 @@ func _has_active_vertex() -> bool:
 
 
 func _update_active_vertex() -> void:
-	for i in polygon.array.size():
-		if (_cursor_position - polygon.array[i]).length() < _CURSOR_THRESHOLD:
+	for i in shape.polygon_points.size():
+		if (
+				(_cursor_position - shape.polygon_points[i]).length()
+				< _CURSOR_THRESHOLD
+		):
 			_active_index = i
 			return
 	_active_index = -1
@@ -201,12 +199,12 @@ func _active_side() -> int:
 	if _has_active_vertex():
 		return -1
 
-	for i in polygon.array.size():
-		# checking if cursor position is between polygon side vertexes
-		var a: Vector2 = polygon.array[i]
-		var b: Vector2 = (
-				polygon.array[i + 1 if i < polygon.array.size() - 1 else 0]
-		)
+	for i in shape.polygon_points.size():
+		# checking if cursor position is between polygon side vertices
+		var a: Vector2 = shape.polygon_points[i]
+		var b: Vector2 = shape.polygon_points[
+			i + 1 if i < shape.polygon_points.size() - 1 else 0
+		]
 		var ab: float = (b - a).length()
 		var ac: float = (_cursor_position - a).length()
 		var bc: float = (_cursor_position - b).length()
@@ -223,17 +221,19 @@ func _active_side() -> int:
 
 func _add_vertex() -> void:
 	undo_redo.create_action("Add vertex to polygon")
-	undo_redo.add_do_method(polygon.insert.bind(_can_add_at, _cursor_position))
-	undo_redo.add_undo_method(polygon.remove_at.bind(_can_add_at))
+	undo_redo.add_do_method(
+			shape.insert_point.bind(_can_add_at, _cursor_position)
+	)
+	undo_redo.add_undo_method(shape.remove_point.bind(_can_add_at))
 	undo_redo.commit_action()
 
 
 func _remove_vertex() -> void:
 	undo_redo.create_action("Remove vertex from polygon")
-	undo_redo.add_do_method(polygon.remove_at.bind(_active_index))
-	undo_redo.add_undo_method(
-			polygon.insert.bind(_active_index, polygon.array[_active_index])
-	)
+	undo_redo.add_do_method(shape.remove_point.bind(_active_index))
+	undo_redo.add_undo_method(shape.insert_point.bind(
+			_active_index, shape.polygon_points[_active_index]
+	))
 	undo_redo.commit_action()
 
 
@@ -241,9 +241,9 @@ func _create_action_drag_vertex() -> void:
 	if _drag_from == _drag_to:
 		return
 	undo_redo.create_action("Move vertex in polygon")
-	undo_redo.add_do_method(polygon.change_at.bind(_active_index, _drag_to))
+	undo_redo.add_do_method(shape.move_point_to.bind(_active_index, _drag_to))
 	undo_redo.add_undo_method(
-			polygon.change_at.bind(_active_index, _drag_from)
+			shape.move_point_to.bind(_active_index, _drag_from)
 	)
 	undo_redo.commit_action(false)
 
@@ -252,21 +252,21 @@ func _create_action_drag_polygon() -> void:
 	if _drag_from == _drag_to:
 		return
 	undo_redo.create_action("Move polygon")
-	undo_redo.add_do_method(polygon.add_to_all.bind(_drag_to - _drag_from))
-	undo_redo.add_undo_method(polygon.add_to_all.bind(_drag_from - _drag_to))
+	undo_redo.add_do_method(shape.move_relative.bind(_drag_to - _drag_from))
+	undo_redo.add_undo_method(shape.move_relative.bind(_drag_from - _drag_to))
 	undo_redo.commit_action(false)
 
 
 ## Moves the entire polygon by given relative amount.
 func _drag_polygon(world_relative: Vector2) -> void:
 	_drag_to = _cursor_position
-	polygon.add_to_all(world_relative)
+	shape.move_relative(world_relative)
 
 
 ## Moves the active (hovered) vertex to the cursor's position.
 func _drag_vertex() -> void:
 	_drag_to = _cursor_position
-	polygon.change_at(_active_index, _cursor_position)
+	shape.move_point_to(_active_index, _cursor_position)
 
 
 ## Draws a vertex at given position. Displays the index of the active vertex.
@@ -274,7 +274,7 @@ func _draw_vertex(vertex_position: Vector2, vertex_index: int) -> void:
 	var is_active_index: bool = vertex_index == _active_index
 	const POINT_OUTLINE_THICKNESS: float = 1.0
 	const POINT_OUTLINE_RADIUS: float = (
-		_VERTEX_RADIUS + POINT_OUTLINE_THICKNESS * 0.5
+			_VERTEX_RADIUS + POINT_OUTLINE_THICKNESS * 0.5
 	)
 
 	# Outline

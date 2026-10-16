@@ -68,12 +68,12 @@ func _generate_provinces_with_noise(
 			province.position_fortress += province.position_army_host
 
 			# Province shape
-			province.polygon().array = PackedVector2Array([
+			province.shape.set_polygon_points(PackedVector2Array([
 				province_position + Vector2(0.0, 0.0),
 				province_position + Vector2(square_length, 0.0),
 				province_position + Vector2(square_length, square_length),
 				province_position + Vector2(0.0, square_length),
-			])
+			]))
 
 			# Adjacencies
 			if i > 0 and _is_province_real(
@@ -121,12 +121,12 @@ func _generate_provinces_without_noise(
 			province.position_fortress += province.position_army_host
 
 			# Province shape
-			province.polygon().array = PackedVector2Array([
+			province.shape.set_polygon_points(PackedVector2Array([
 				province_position + Vector2(0.0, 0.0),
 				province_position + Vector2(square_length, 0.0),
 				province_position + Vector2(square_length, square_length),
 				province_position + Vector2(0.0, square_length),
-			])
+			]))
 
 			# Adjacencies
 			if i > 0:

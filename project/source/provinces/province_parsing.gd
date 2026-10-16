@@ -74,12 +74,12 @@ static func to_raw_array(province_list: Array[Province]) -> Array:
 			})
 
 		# Shape
-		if province.polygon().array != Province.default_shape():
+		if not province.shape.is_default_shape():
 			var shape_vertices_x: Array = []
 			var shape_vertices_y: Array = []
-			for i in province.polygon().array.size():
-				shape_vertices_x.append(province.polygon().array[i].x)
-				shape_vertices_y.append(province.polygon().array[i].y)
+			for point in province.shape.polygon_points:
+				shape_vertices_x.append(point.x)
+				shape_vertices_y.append(point.y)
 			province_data.merge({
 				_SHAPE_KEY: {
 					_SHAPE_X_KEY: shape_vertices_x,
@@ -198,8 +198,8 @@ static func _load_province_from_raw(raw_data: Variant, game: Game) -> void:
 				)
 
 	# Shape
-	province.polygon().array = (
-			_province_shape_from_raw(raw_dict.get(_SHAPE_KEY))
+	province.shape.set_polygon_points(
+			_polygon_shape_from_raw(raw_dict.get(_SHAPE_KEY))
 	)
 
 	# Position of the host army
@@ -232,9 +232,10 @@ static func _load_province_from_raw(raw_data: Variant, game: Game) -> void:
 	game.world.provinces.add(province)
 
 
-static func _province_shape_from_raw(raw_data: Variant) -> PackedVector2Array:
+## Returns an empty array if data is invalid.
+static func _polygon_shape_from_raw(raw_data: Variant) -> PackedVector2Array:
 	if raw_data is not Dictionary:
-		return Province.default_shape()
+		return PackedVector2Array()
 	var raw_dict: Dictionary = raw_data
 
 	var shape_x_array: Array = []
@@ -251,9 +252,9 @@ static func _province_shape_from_raw(raw_data: Variant) -> PackedVector2Array:
 	)
 
 	if number_of_points < 3:
-		return Province.default_shape()
+		return PackedVector2Array()
 
-	var shape: PackedVector2Array = []
+	var polygon_points: PackedVector2Array = []
 	for i in number_of_points:
 		# Avoid using [ParseUtils] here, for performance reasons
 		# Yes this means number strings are not accepted here
@@ -261,11 +262,11 @@ static func _province_shape_from_raw(raw_data: Variant) -> PackedVector2Array:
 				(shape_x_array[i] is float or shape_x_array[i] is int)
 				and (shape_y_array[i] is float or shape_y_array[i] is int)
 		):
-			return Province.default_shape()
+			return PackedVector2Array()
 
-		shape.append(Vector2(shape_x_array[i], shape_y_array[i]))
+		polygon_points.append(Vector2(shape_x_array[i], shape_y_array[i]))
 
-	return shape
+	return polygon_points
 
 
 static func _position_army_host_from_raw(raw_dict: Dictionary) -> Vector2:

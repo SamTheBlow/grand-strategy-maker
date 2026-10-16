@@ -21,7 +21,7 @@ func _refresh() -> void:
 
 	# Setup the polygon shape editing
 	var polygon_edit := PolygonEdit.new()
-	polygon_edit.polygon = selected_province.polygon()
+	polygon_edit.shape = selected_province.shape
 	polygon_edit.is_draw_polygon_enabled = false
 	polygon_edit.undo_redo = _undo_redo
 	_edge_case.polygon_edit = polygon_edit

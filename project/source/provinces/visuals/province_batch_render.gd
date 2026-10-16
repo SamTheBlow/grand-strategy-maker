@@ -46,7 +46,7 @@ func _draw() -> void:
 		var color: Color = (
 				DEFAULT_FILL_COLOR if country == null else country.color
 		)
-		draw_colored_polygon(province.polygon().array, color)
+		draw_colored_polygon(province.shape.polygon_points, color)
 
 
 func _refresh_visibility() -> void:
@@ -55,9 +55,9 @@ func _refresh_visibility() -> void:
 
 func _connect_province(province: Province) -> void:
 	province.owner_changed.connect(queue_redraw.unbind(1))
-	province.polygon().changed.connect(queue_redraw)
+	province.shape.changed.connect(queue_redraw)
 
 
 func _disconnect_province(province: Province) -> void:
 	province.owner_changed.disconnect(queue_redraw)
-	province.polygon().changed.disconnect(queue_redraw)
+	province.shape.changed.disconnect(queue_redraw)

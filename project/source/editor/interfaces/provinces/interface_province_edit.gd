@@ -100,10 +100,10 @@ func _duplicate() -> void:
 	# Create duplicate
 	var new_province := Province.new()
 	new_province.name = province.name
-	new_province.polygon().array = province.polygon().array.duplicate()
+	new_province.shape.copy_other(province.shape)
 	new_province.position_army_host = province.position_army_host
 	new_province.position_fortress = province.position_fortress
-	new_province.move_relative(_DUPLICATE_PROVINCE_OFFSET)
+	new_province.shape.move_relative(_DUPLICATE_PROVINCE_OFFSET)
 	new_province.owner_country = province.owner_country
 	new_province.population().value = province.population().value
 	new_province.money_income().value = province.money_income().value

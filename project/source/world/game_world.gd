@@ -23,7 +23,7 @@ var armies_in_each_province := ArmiesInEachProvince.new(provinces, armies)
 var armies_of_each_country: ArmiesOfEachCountry
 var provinces_of_each_country: ProvincesOfEachCountry
 
-var _limits := WorldLimits.new(self)
+var _limits := WorldLimits.new(provinces)
 
 ## Multiple building types is already implemented for saving/loading,
 ## however multiple building types is still not fully implemented.

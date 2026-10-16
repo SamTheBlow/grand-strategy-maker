@@ -23,7 +23,8 @@ var custom_limits: Vector4i = DEFAULT_LIMITS:
 		custom_limits = value
 		custom_limits_changed.emit(self)
 
-var _world: GameWorld
+## Required to setup automatic world limits.
+var _provinces: Provinces
 var _custom_limits_enabled: bool = false
 
 var _current_limits: WorldLimitsBase:
@@ -34,9 +35,9 @@ var _current_limits: WorldLimitsBase:
 		_current_limits.changed.connect(current_limits_changed.emit)
 
 
-func _init(world: GameWorld) -> void:
-	_world = world
-	_current_limits = WorldLimitsAutomatic.new(_world)
+func _init(provinces: Provinces) -> void:
+	_provinces = provinces
+	_current_limits = WorldLimitsAutomatic.new(provinces)
 
 
 func is_custom_limits_enabled() -> bool:
@@ -58,7 +59,7 @@ func disable_custom_limits() -> void:
 	if not _custom_limits_enabled:
 		return
 	var _old_limits: Vector4i = _current_limits.value()
-	_current_limits = WorldLimitsAutomatic.new(_world)
+	_current_limits = WorldLimitsAutomatic.new(_provinces)
 	_custom_limits_enabled = false
 	mode_changed.emit()
 	if _old_limits != _current_limits.value():
