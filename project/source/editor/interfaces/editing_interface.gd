@@ -47,7 +47,7 @@ const _INTERFACE_SCENES: Dictionary[InterfaceNavigator.Type, PackedScene] = {
 		preload("uid://dlpstn5iyda4k"),
 	InterfaceNavigator.Type.PLAYER_EDIT:
 		preload("uid://exhe7mpnu7w1"),
-	InterfaceNavigator.Type.TURN_ORDER:
+	InterfaceNavigator.Type.TURN_SYSTEM:
 		preload("uid://bgcrykgs0vh3o"),
 	InterfaceNavigator.Type.WORLD_LIMITS:
 		preload("uid://cyspbdausxgwr"),

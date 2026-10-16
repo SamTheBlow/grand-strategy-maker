@@ -1,0 +1,124 @@
+[gd_scene format=3 uid="uid://bgcrykgs0vh3o"]
+
+[ext_resource type="Script" uid="uid://bf0ctknlrud1n" path="res://source/editor/interfaces/turn_system/interface_turn_system.gd" id="1_gikm7"]
+[ext_resource type="PackedScene" uid="uid://ctqnl5t5vkdm" path="res://source/editor/interfaces/components/component_section.tscn" id="2_cs"]
+[ext_resource type="PackedScene" uid="uid://cummjubuua6yk" path="res://source/utils/property_tree/nodes/item_int.tscn" id="2_d3nnw"]
+[ext_resource type="Script" uid="uid://dvbpwv2xe26tq" path="res://source/utils/ui/interpolated_container/interpolated_box_container.gd" id="2_h7hlj"]
+[ext_resource type="Script" uid="uid://dvo2mdraodovy" path="res://source/utils/property_tree/items/property_tree_item.gd" id="3_q2v0k"]
+[ext_resource type="Script" uid="uid://ck4addyc1ep24" path="res://source/utils/property_tree/items/item_int.gd" id="4_1gqhb"]
+[ext_resource type="PackedScene" uid="uid://bmfl2xa7n2g2n" path="res://source/utils/property_tree/nodes/item_country.tscn" id="5_olmqs"]
+[ext_resource type="Script" uid="uid://eb11a73aevp7" path="res://source/utils/property_tree/items/item_country.gd" id="6_uy8bi"]
+
+[sub_resource type="Resource" id="Resource_d3nnw"]
+script = ExtResource("4_1gqhb")
+value = 1
+has_minimum = true
+minimum = 1
+has_maximum = false
+maximum = 1
+text = "Current turn"
+metadata/_custom_type_script = "uid://ck4addyc1ep24"
+
+[sub_resource type="Resource" id="Resource_olmqs"]
+script = ExtResource("6_uy8bi")
+text = "Playing country"
+metadata/_custom_type_script = "uid://eb11a73aevp7"
+
+[node name="InterfaceTurnSystem" type="Control" unique_id=1157126741]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gikm7")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=950639603]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Tabs" type="TabContainer" parent="VBoxContainer" unique_id=999001]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="Settings" type="MarginContainer" parent="VBoxContainer/Tabs" unique_id=999004]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+metadata/_tab_index = 0
+
+[node name="Content" type="VBoxContainer" parent="VBoxContainer/Tabs/Settings" unique_id=1346996178]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CurrentTurn" parent="VBoxContainer/Tabs/Settings/Content" unique_id=1012726440 instance=ExtResource("2_d3nnw")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 1
+item = SubResource("Resource_d3nnw")
+
+[node name="PlayingCountry" parent="VBoxContainer/Tabs/Settings/Content" unique_id=1377714308 instance=ExtResource("5_olmqs")]
+unique_name_in_owner = true
+layout_mode = 2
+item = SubResource("Resource_olmqs")
+
+[node name="Control" type="Control" parent="VBoxContainer/Tabs/Settings/Content" unique_id=579888650]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ComponentSection" parent="VBoxContainer/Tabs/Settings/Content/Control" unique_id=1715593010 instance=ExtResource("2_cs")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Turn Order" type="MarginContainer" parent="VBoxContainer/Tabs" unique_id=999002]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+metadata/_tab_index = 1
+
+[node name="Content" type="VBoxContainer" parent="VBoxContainer/Tabs/Turn Order" unique_id=999003]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/Tabs/Turn Order/Content" unique_id=1204927363]
+layout_mode = 2
+text = "The order in which countries will play."
+fit_content = true
+
+[node name="ListContainer" type="Control" parent="VBoxContainer/Tabs/Turn Order/Content" unique_id=423418537]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/Tabs/Turn Order/Content/ListContainer" unique_id=2005734533]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+follow_focus = true
+
+[node name="ElementContainer" type="Container" parent="VBoxContainer/Tabs/Turn Order/Content/ListContainer/ScrollContainer" unique_id=1643277881]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_h7hlj")
+metadata/_custom_type_script = "uid://dvbpwv2xe26tq"

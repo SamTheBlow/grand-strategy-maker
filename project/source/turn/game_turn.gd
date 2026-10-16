@@ -5,15 +5,19 @@ class_name GameTurn
 # TODO implement multiple players playing at the same time
 # for now, assume the playing player is the first element in playing_players()
 
+## During gameplay: emitted once all countries have played their turn.
+## Outside gameplay: emitted when `set_current_turn` changes the value.
+signal turn_changed(new_turn: int)
+
+## During gameplay: emitted when it becomes a different country's turn to play.
+## Outside gameplay: emitted when `set_playing_country` changes the value.
+signal playing_country_changed(country: Country)
+
 signal is_running_changed(is_running: bool)
 ## Emitted when the gameplay loop starts running.
 signal started()
-## Emitted once all countries have played their turn.
-signal turn_changed(new_turn: int)
 ## Emitted when a country's turn ends, before the next country's turn begins.
 signal country_turn_ended(country: Country)
-## Emitted the moment it becomes a different country's turn to play.
-signal playing_country_changed(country: Country)
 
 var _game: Game
 
@@ -28,9 +32,11 @@ var _is_running: bool = false:
 
 var _turn: int = 1
 
-## This is -1 if the game has not yet started.
+## If the id is invalid, falls back to
+## the first country in the list when the gameplay loop starts.
 var _playing_country_id: int = -1
-## This is -1 if the game has not yet started.
+## Used to iterate through countries in the country list's order.
+## Only relevant while gameplay loop is running.
 var _playing_country_index: int = -1
 
 var _ai_thread := AIThread.new()
@@ -54,11 +60,38 @@ func current_turn() -> int:
 	return _turn
 
 
-## Returns a country: it's currently that country's turn to play.
-## Only use this while the gameplay loop is running.
-## Returns null if game has not yet started.
+## Cannot be used while gameplay loop is running. Value must be at least 1.
+func set_current_turn(new_value: int) -> void:
+	if _is_running:
+		push_error("Tried to set current turn while gameplay loop is running.")
+		return
+	elif _turn == new_value:
+		return
+	_turn = new_value
+	turn_changed.emit(_turn)
+
+
+## It's currently this country's turn to play.
+## May return null if gameplay loop is not currently running.
 func playing_country() -> Country:
 	return _game.countries.map.get(_playing_country_id)
+
+
+## Cannot be used while gameplay loop is running. Value may be null.
+func set_playing_country(new_value: Country) -> void:
+	if _is_running:
+		push_error("Tried to set playing country while gameplay loop is running.")
+		return
+	elif new_value == null:
+		if _playing_country_id == -1:
+			return
+		_playing_country_id = -1
+	else:
+		if _playing_country_id == new_value.id:
+			return
+		_playing_country_id = new_value.id
+
+	playing_country_changed.emit(new_value)
 
 
 ## Returns a list of all players whose country is the current playing country.

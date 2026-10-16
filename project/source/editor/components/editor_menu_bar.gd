@@ -36,7 +36,7 @@ const _EDIT_TAB_WIN_CONDITIONS_ID: int = 2
 const _EDIT_TAB_COUNTRIES_ID: int = 4
 const _EDIT_TAB_DIPLOMACY_ID: int = 5
 const _EDIT_TAB_PLAYERS_ID: int = 6
-const _EDIT_TAB_TURN_ORDER_ID: int = 7
+const _EDIT_TAB_TURN_SYSTEM_ID: int = 7
 const _EDIT_TAB_WORLD_LIMITS_ID: int = 9
 const _EDIT_TAB_BACKGROUND_COLOR_ID: int = 10
 const _EDIT_TAB_DECORATIONS_ID: int = 11
@@ -147,9 +147,9 @@ func _on_edit_tab_id_pressed(id: int) -> void:
 		_EDIT_TAB_PLAYERS_ID:
 			# "Players"
 			interface_type = InterfaceNavigator.Type.PLAYER_LIST
-		_EDIT_TAB_TURN_ORDER_ID:
-			# "Turn Order"
-			interface_type = InterfaceNavigator.Type.TURN_ORDER
+		_EDIT_TAB_TURN_SYSTEM_ID:
+			# "Turn System"
+			interface_type = InterfaceNavigator.Type.TURN_SYSTEM
 		_EDIT_TAB_WORLD_LIMITS_ID:
 			# "World Limits"
 			interface_type = InterfaceNavigator.Type.WORLD_LIMITS

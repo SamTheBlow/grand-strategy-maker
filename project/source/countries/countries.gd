@@ -70,13 +70,7 @@ func reorder(country_id: int, new_index: int) -> void:
 ## Removes a country, using given [UndoRedoResource] system.
 ## Ensures that when we undo, everything is exactly as it was before.
 func undo_redo_remove(
-		country: Country,
-		undo_redo: UndoRedoResource,
-		provinces: Provinces,
-		armies: Armies,
-		armies_of_each_country: ArmiesOfEachCountry,
-		armies_in_each_province: ArmiesInEachProvince,
-		game_players: GamePlayers
+		country: Country, undo_redo: UndoRedoResource, game: Game
 ) -> void:
 	# Save relationships state before removal
 	var raw_relationships: Array = (
@@ -91,9 +85,10 @@ func undo_redo_remove(
 
 	# Save all of this country's armies and their positions
 	var armies_with_positions: Array[ArmyWithPositions] = (
-			armies.list_with_positions(
-					armies_of_each_country.dictionary[country].list.keys(),
-					armies_in_each_province
+			game.world.armies.list_with_positions(
+					game.world.armies_of_each_country
+					.dictionary[country].list.keys(),
+					game.world.armies_in_each_province
 			)
 	)
 
@@ -110,26 +105,31 @@ func undo_redo_remove(
 
 	# Ensure province ownership is restored on undo
 	var province_id_list: Array[int] = []
-	for province in provinces.list:
+	for province in game.world.provinces.list:
 		if province.owner_country == country:
 			province_id_list.append(province.id)
 	undo_redo.add_undo_method(_restore_province_ownership.bind(
-			country, province_id_list, provinces
+			country, province_id_list, game.world.provinces
 	))
 
 	# Ensure the country's armies are restored on undo
-	undo_redo.add_undo_method(armies.add_list_with_positions.bind(
-			armies_with_positions, armies_in_each_province
+	undo_redo.add_undo_method(game.world.armies.add_list_with_positions.bind(
+			armies_with_positions, game.world.armies_in_each_province
 	))
 
 	# Ensure player control over this country is restored on undo
 	var player_id_list: Array[int] = []
-	for game_player in game_players.list:
+	for game_player in game.game_players.list:
 		if game_player.playing_country == country:
 			player_id_list.append(game_player.id)
 	undo_redo.add_undo_method(_restore_player_control.bind(
-			country, player_id_list, game_players
+			country, player_id_list, game.game_players
 	))
+
+	# Ensure the turn system's playing country is updated, when applicable
+	if game.turn.playing_country() == country:
+		undo_redo.add_do_method(game.turn.set_playing_country.bind(null))
+		undo_redo.add_undo_method(game.turn.set_playing_country.bind(country))
 
 	undo_redo.commit_action()
 

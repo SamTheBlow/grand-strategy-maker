@@ -54,15 +54,7 @@ func _on_edit_notifications_pressed() -> void:
 
 
 func _delete() -> void:
-	project.game.countries.undo_redo_remove(
-			country,
-			undo_redo,
-			project.game.world.provinces,
-			project.game.world.armies,
-			project.game.world.armies_of_each_country,
-			project.game.world.armies_in_each_province,
-			project.game.game_players
-	)
+	project.game.countries.undo_redo_remove(country, undo_redo, project.game)
 
 
 func _duplicate() -> void:
