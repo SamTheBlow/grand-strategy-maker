@@ -52,6 +52,8 @@ func _refresh_limits() -> void:
 
 
 func _refresh_zoom_limits() -> void:
+	if not is_inside_tree():
+		return
 	var minimum_zoom: float = _minimum_zoom()
 	var maximum_zoom: float = maxf(_MAXIMUM_ZOOM, minimum_zoom)
 	_camera_zoom.set_zoom_limits(minimum_zoom, maximum_zoom)
@@ -59,9 +61,11 @@ func _refresh_zoom_limits() -> void:
 
 ## Currently, you can zoom out such that the world takes half the screen.
 func _minimum_zoom() -> float:
-	if _world_limits == null:
-		return -INF
-	if _world_limits.width() == 0.0 or _world_limits.height() == 0.0:
+	if (
+			_world_limits == null
+			or _world_limits.width() == 0
+			or _world_limits.height() == 0
+	):
 		return -INF
 
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
